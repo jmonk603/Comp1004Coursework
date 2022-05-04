@@ -1,0 +1,367 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Comp1004 project</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- style section for making everything look nice -->
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        header {
+            background-color: #666;
+            padding: 30px;
+            text-align: center;
+            font-size: 35px;
+            color: white;
+        }
+
+        article {
+            padding: 20px;
+            background-color: #f1f1f1;
+            height: 600px;
+        }
+
+        footer {
+            background-color: #666;
+            padding: 30px;
+            text-align: center;
+            color: white;
+	    font-size: 25px;
+        }
+.slidecontainer {
+  width: 100%;
+}
+
+.slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 15px;
+  border-radius: 5px;
+  background: #d3d3d3;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+}
+
+.slider:hover {
+  opacity: 1;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: #a55;
+  cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: #04AA6D;
+  cursor: pointer;
+}
+.button {
+  background-color: #a55;
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+}
+
+</style>
+</head>
+<body>
+
+    <header>
+	<!-- title -->
+        <h2>Comp 1004</h2>
+    </header>
+
+    <section>
+        
+
+        <article>
+	    <!-- text at the start -->
+            <h1>eating management system</h1>
+            <p>This system is designed to prompt people when it is a healthy time to eat to help people with either busy schedules or eating disorders</p>
+            <p>the light is initially green and slowly fade overtime to red when it is advised for you to eat and when you press the button below to tell it that you have eaten it will go back to green</p>
+
+	    <!-- buttons for resets and meal name input -->
+            <button class="button" id="btn_Reset" onClick="btnReset()">Reset</button>
+            <button class="button" id="btn_PrtReset" onclick="prtReset()">Partial Reset</button>
+	    <input id="mealInput" type="text" placeholder="Enter last meal">
+
+	    <br>
+
+	    <!-- text for where data will go -->
+	    <p id="ctimer">current timer:</p>
+	    <p id="TheResetTime">seconds since last reset:</p>
+	    <p id="TheResetType">type:</p>
+	    <p id="meal">last meal ate: </p>
+
+	    <!-- slider -->
+	    <div class="slidecontainer">
+  		<input type="range" min="1" max="360" value="" class="slider" id="myRange">
+  		<p>length in minutes: <span id="demo"></span></p>
+	    </div>
+
+	    <!-- save button and statistics button -->
+	    <button class="button" id="btn_save" onClick="save()">Save</button> 
+	    <button class="button" id="btn_total" onClick="showTotal()">Show Analytics</button>
+
+	    <br>
+
+	    <!-- name input -->
+	    <input id="nameInput" type="text" placeholder="Enter Name">
+	    <br>
+	    <button class="button" id="btn_name" onClick="saveName()">Save Name</button>
+`	</article>
+    </section>
+
+    <footer>
+	<!-- just for grey box at the bottom of the screen -->
+    </footer>
+
+</body>
+</html>
+<script>     
+    //variable definition  
+    var timer;
+    var R = 0,
+        G = 255,
+        B = 0;
+    var speed = 118;
+    var varblA = 0;
+    var currenttimer = 0;
+
+    function init() {
+	//sets background and calls colour change function repeatedly
+        document.body.style.background = "rgb(" + [R, G, B].join(",") + ")";
+        timer = setInterval(changeColor, speed);
+    }
+
+    function changeColor() {
+        if (R >= 255) {
+	    //sets the lights to red if the timer is over
+            clearInterval(timer);
+	    lightsRed();
+        }
+	//makes the lights yellow based on the timer being half done
+	currenttimer = (slider.value * 60);
+	currenttimer = (currenttimer / 2);
+	if (currenttimer == theTimer) {
+	    lightsYellow();
+	}
+	else {
+	    //changes the rgb value for the background
+            G -= (0.5 / slider.value);
+            R += (0.5 / slider.value);
+            document.body.style.background = "rgb(" + [R, G, B].join(",") + ")";
+    }
+}
+
+    function saveValue() {
+	//stores the times spent in an array in local storage
+	if (localStorage.timeSpent == null) localStorage.timeSpent = JSON.stringify([]);
+	var storedTimes = JSON.parse(localStorage.getItem("timeSpent"));
+	storedTimes.push(theTimer);
+	localStorage.setItem("timeSpent", JSON.stringify(storedTimes));
+    }
+
+    function btnReset() {
+	//button for reseting the timer and background colour
+        clearInterval(timer);
+	var mealate = document.querySelector("#mealInput").value;
+        R = 0;
+        G = 255;
+	varblA = 1;
+
+	//updates text variables
+	document.getElementById("TheResetTime").innerHTML = "seconds since last reset: " + theTimer;
+	document.getElementById("TheResetType").innerHTML = "type: Full";
+	document.getElementById("meal").innerHTML = "last meal ate: " + mealate;
+
+	//also stores the last meal ate in local storage
+	if (localStorage.lastMealAte == null) localStorage.lastMealAte = JSON.stringify([]);
+	localStorage.setItem("lastMealAte", JSON.stringify(mealate));
+	
+	if (theTimer > 0) {
+		saveValue();
+	}
+	theTimer = -1;
+	lightsInstantGreen();
+        init();
+    }
+
+    function lightsRed() {
+	//turns the lights red
+	var url = "http://10.208.61.74:5050/api/stlaB2I6VZ8O80Qepc-1xfmLrHgyTFvB9IGupaQz/lights/3/state";
+
+	var xhr = new XMLHttpRequest();
+	xhr.open("PUT", url);
+
+	xhr.setRequestHeader("Content-Type", "application/json");
+	xhr.setRequestHeader("Content-Length", "0");
+
+	xhr.onreadystatechange = function () {
+   		if (xhr.readyState === 4) {
+      		console.log(xhr.status);
+      		console.log(xhr.responseText);
+   	}};
+	
+	var data = '{"on": true, "transitiontime":0, "bri":245, "xy" : [0.9000,0.1000]}'
+	xhr.send(data);
+    }
+    function lightsInstantGreen() {
+	//turns the lights green
+	var url = "http://10.208.61.74:5050/api/stlaB2I6VZ8O80Qepc-1xfmLrHgyTFvB9IGupaQz/lights/3/state";
+
+	var xhr = new XMLHttpRequest();
+	xhr.open("PUT", url);
+
+	xhr.setRequestHeader("Content-Type", "application/json");
+	xhr.setRequestHeader("Content-Length", "0");
+
+	xhr.onreadystatechange = function () {
+   		if (xhr.readyState === 4) {
+      		console.log(xhr.status);
+      		console.log(xhr.responseText);
+   	}};
+	
+	var data = '{"on": true, "transitiontime":0, "bri":245, "xy" : [0.1000,0.9000]}'
+	xhr.send(data);
+    }
+    function lightsYellow() {
+	//turns the lights yellow
+	var url = "http://10.208.61.74:5050/api/stlaB2I6VZ8O80Qepc-1xfmLrHgyTFvB9IGupaQz/lights/3/state";
+
+	var xhr = new XMLHttpRequest();
+	xhr.open("PUT", url);
+
+	xhr.setRequestHeader("Content-Type", "application/json");
+	xhr.setRequestHeader("Content-Length", "0");
+
+	xhr.onreadystatechange = function () {
+   		if (xhr.readyState === 4) {
+      		console.log(xhr.status);
+      		console.log(xhr.responseText);
+   	}};
+	
+	var data = '{"on": true, "transitiontime":0, "bri":245, "xy" : [0.9000,0.9000]}'
+	xhr.send(data);
+    }
+
+    function prtReset() {
+	//same as the full reset but makes the lights yellow and increases the rgb values by half
+        clearInterval(timer);
+	var mealate = document.querySelector("#mealInput").value;
+        R -= 127;
+        G += 127;
+	varblA = 1;
+	document.getElementById("TheResetTime").innerHTML = "seconds since last reset: " + theTimer;
+	document.getElementById("TheResetType").innerHTML = "type: Partial";
+	document.getElementById("meal").innerHTML = "last meal ate: " + mealate;
+
+	if (localStorage.lastMealAte == null) localStorage.lastMealAte = JSON.stringify("");
+	localStorage.setItem("lastMealAte", JSON.stringify(mealate));
+
+	if (theTimer > 0) {
+		saveValue();
+	}
+	theTimer = -1;
+	if (G > 255) {
+		G = 255;
+		lightsInstantGreen();
+	}
+	if (R < 0) {
+		R = 0;
+	}
+	else {
+		lightsYellow();
+	}
+        init();
+    }
+
+    //the timer that goes up every second
+    var theTimer = 0;
+     window.setInterval(
+     function () {
+	 if (varblA == 1) {
+         theTimer = theTimer + 1;
+         document.getElementById("ctimer").innerHTML = "current timer: " + theTimer;
+
+     }}, 1000);
+
+     function showTotal() {
+	//opens a windows alert for the statistics
+	if (localStorage.name == null) localStorage.name = JSON.stringify([]);
+	if (localStorage.timeSpent == null) localStorage.timeSpent = JSON.stringify([]);
+	var currentTimes = JSON.parse(localStorage.getItem("timeSpent"));
+	var theLength = currentTimes.length;
+	var username = JSON.parse(localStorage.getItem("name"));
+	var theAverage = 0;
+	for (let i = 0; i < theLength; i++) {
+		theAverage += currentTimes[i];
+	}
+	theAverage = (theAverage / theLength);
+	theAverage = theAverage.toFixed(0);
+	if (username.length > 0){
+		window.alert(username + "'s statistics: Average: " + theAverage + ' total resets: ' + theLength)
+	}
+	else{
+		window.alert("statistics: Average: " + theAverage + ' total resets: ' + theLength)
+	}
+    }
+
+    function saveName() {
+	//saves the user's name to local storage
+	if (localStorage.name == null) localStorage.name = JSON.stringify("");
+	var name = document.querySelector("#nameInput").value;
+	localStorage.setItem("name", JSON.stringify(name));
+
+    }
+     
+    //stores the slider's value to local storage and updates the slider to the value upon opening the program
+
+    var slider = document.getElementById("myRange");
+    
+    var output = document.getElementById("demo");
+    myRange.value = JSON.parse(localStorage.setting);
+    output.innerHTML = myRange.value;
+    if (localStorage.setting == null) localStorage.setting = JSON.stringify([]);
+    function save() {
+    var lm = [myRange.value];
+    localStorage.setting = JSON.stringify(lm);
+    sliderValue = JSON.parse(localStorage.setting);
+    }
+	
+
+slider.oninput = function() {
+  output.innerHTML = this.value;
+}
+
+//counter for amount of times the program has been used
+if (localStorage.logonCount == null) localStorage.logonCount = JSON.stringify([]);
+var logonCounter = parseInt(JSON.parse(localStorage.logonCount));
+logonCounter += 1;
+localStorage.setItem("logonCount", JSON.stringify(logonCounter));
+
+
+</script>
